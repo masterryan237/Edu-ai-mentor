@@ -1,4 +1,5 @@
 import 'package:eduai_mentor/services/auth_service.dart';
+import 'package:eduai_mentor/utilis/app_texts_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,6 @@ class _LoginViewState extends State<LoginView> {
 
   // Variables pour masquer/afficher le texte
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
   @override
   void initState() {
@@ -40,20 +40,6 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
-  bool _validateFields() {
-    setState(() {
-      _emailError = _email.text.isEmpty ? "Enter your email address" : null;
-      if (_password.text.isEmpty) {
-        _passwordError = "Enter a secure password";
-      } else if (_password.text != _confirmPassword.text) {
-        _passwordError = "passwords not matching";
-      } else {
-        _passwordError = null;
-      }
-    });
-    return _emailError == null && _passwordError == null;
-  }
-
   Future<void> _handleForgotPassword(
     String email,
     BuildContext dialogContext,
@@ -61,7 +47,7 @@ class _LoginViewState extends State<LoginView> {
   ) async {
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email first")),
+        SnackBar(content: Text(AppTexts.pleaseEnterEmail(context))),
       );
       return;
     }
@@ -73,8 +59,8 @@ class _LoginViewState extends State<LoginView> {
       if (mounted) {
         Navigator.pop(dialogContext);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Reset link sent! Check your email inbox."),
+          SnackBar(
+            content: Text(AppTexts.resetLinkSent(context)),
             backgroundColor: Colors.green,
           ),
         );
@@ -90,8 +76,6 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_validateFields()) return;
-
     setState(() {
       _isLoading = true;
       _emailError = null; // Reset propre
@@ -113,9 +97,9 @@ class _LoginViewState extends State<LoginView> {
         _passwordError = results.$2;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Network Error : $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppTexts.networkError(context, e.toString()))),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -124,192 +108,418 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 25.0),
-        child: Center(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Image.asset('assets/images/AppLogo.png', width: 150, height: 150),
-              const Text(
-                'LogIn',
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 30),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.fromARGB(255, 142, 120, 250),
+              Color.fromARGB(255, 160, 140, 255),
+              Colors.white,
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 25.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 40),
 
-              Semantics(
-                identifier: "email_field",
-                child: TextField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email Address',
-                    hintText: 'Enter your Email',
-                    errorText: _emailError,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // --- CHAMP PASSWORD AVEC OEIL ---
-              Semantics(
-                identifier: "password_field",
-                child: TextField(
-                  controller: _password,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter password',
-                    errorText: _passwordError,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
+                // Logo Section
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.asset(
+                          'assets/images/AppLogo.png',
+                          width: 120,
+                          height: 120,
+                          color: Colors.white,
+                        ),
                       ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // --- CHAMP CONFIRM PASSWORD AVEC OEIL ---
-              Semantics(
-                identifier: "confirm_password_field",
-                child: TextField(
-                  controller: _confirmPassword,
-                  obscureText: _obscureConfirmPassword,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm Password',
-                    hintText: 'Confirm password',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
+                      const SizedBox(height: 20),
+                      Text(
+                        AppTexts.welcomeBack(context),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                      onPressed: () {
-                        setState(
-                          () => _obscureConfirmPassword =
-                              !_obscureConfirmPassword,
-                        );
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppTexts.signInToContinue(context),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
 
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => StatefulBuilder(
-                        builder: (context, setDialogState) => AlertDialog(
-                          title: const Text("Reset Password"),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                "Enter your email to receive a reset link:",
+                const SizedBox(height: 40),
+
+                // Login Form Card
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.deepPurple.withOpacity(0.1),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(25),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Email Field
+                      Text(
+                        AppTexts.email(context),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Semantics(
+                        identifier: "email_field",
+                        child: TextField(
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
+                          style: const TextStyle(color: Colors.black87),
+                          decoration: InputDecoration(
+                            hintText: AppTexts.enterYourEmail(context),
+                            hintStyle: TextStyle(color: Colors.grey.shade500),
+                            errorText: _emailError,
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(
+                                color: Colors.deepPurpleAccent,
+                                width: 2,
                               ),
-                              const SizedBox(height: 15),
-                              TextField(
-                                controller: _resetEmailController,
-                                decoration: InputDecoration(
-                                  labelText: "Email",
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(color: Colors.red),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.email_outlined,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Password Field
+                      Text(
+                        AppTexts.password(context),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Semantics(
+                        identifier: "password_field",
+                        child: TextField(
+                          controller: _password,
+                          obscureText: _obscurePassword,
+                          style: const TextStyle(color: Colors.black87),
+                          decoration: InputDecoration(
+                            hintText: AppTexts.enterYourPassword(context),
+                            hintStyle: TextStyle(color: Colors.grey.shade500),
+                            errorText: _passwordError,
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(
+                                color: Colors.deepPurpleAccent,
+                                width: 2,
+                              ),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: const BorderSide(color: Colors.red),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.deepPurple,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: Colors.deepPurple,
+                              ),
+                              onPressed: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // Forgot Password
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => StatefulBuilder(
+                                builder: (context, setDialogState) =>
+                                    AlertDialog(
+                                      title: Text(
+                                        AppTexts.resetPassword(context),
+                                        style: const TextStyle(
+                                          color: Colors.deepPurple,
+                                        ),
+                                      ),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            AppTexts.resetEmailInstruction(
+                                              context,
+                                            ),
+                                            style: const TextStyle(
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 15),
+                                          TextField(
+                                            controller: _resetEmailController,
+                                            decoration: InputDecoration(
+                                              labelText: AppTexts.emailLabel(
+                                                context,
+                                              ),
+                                              labelStyle: const TextStyle(
+                                                color: Colors.deepPurple,
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                borderSide: const BorderSide(
+                                                  color: Colors.deepPurple,
+                                                ),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                borderSide: const BorderSide(
+                                                  color:
+                                                      Colors.deepPurpleAccent,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: Text(
+                                            AppTexts.cancel(context),
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                        _isLoading
+                                            ? const CircularProgressIndicator(
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                      Color
+                                                    >(Colors.deepPurple),
+                                              )
+                                            : ElevatedButton(
+                                                onPressed: () =>
+                                                    _handleForgotPassword(
+                                                      _resetEmailController
+                                                          .text,
+                                                      context,
+                                                      setDialogState,
+                                                    ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.deepPurple,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  AppTexts.sendLink(context),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                      ],
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                          child: Text(
+                            AppTexts.forgotPassword(context),
+                            style: const TextStyle(
+                              color: Colors.deepPurple,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // Login Button
+                      _isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.deepPurple,
                                 ),
                               ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text("Cancel"),
-                            ),
-                            _isLoading
-                                ? const CircularProgressIndicator()
-                                : ElevatedButton(
-                                    onPressed: () => _handleForgotPassword(
-                                      _resetEmailController.text,
-                                      context,
-                                      setDialogState,
-                                    ),
-                                    child: const Text("Send Link"),
+                            )
+                          : Semantics(
+                              identifier: "login_button",
+                              child: ElevatedButton(
+                                onPressed: _handleLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.deepPurple,
+                                  foregroundColor: Colors.white,
+                                  elevation: 5,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
                                   ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Forgot password? Try to reset',
-                    style: TextStyle(color: Colors.blue, fontSize: 13),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 30,
+                                    vertical: 18,
+                                  ),
+                                  shadowColor: Colors.deepPurple.withOpacity(
+                                    0.3,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      AppTexts.signIn(context),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Icon(Icons.arrow_forward, size: 20),
+                                  ],
+                                ),
+                              ),
+                            ),
+                    ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 30),
 
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: Semantics(
-                        identifier: "login_button",
-                        child: OutlinedButton(
-                          onPressed: _handleLogin,
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.blue),
-                          ),
-                          child: const Text(
-                            'Log in',
-                            style: TextStyle(color: Colors.blue, fontSize: 18),
-                          ),
+                // Register Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppTexts.dontHaveAccount(context),
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 15,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pushNamedAndRemoveUntil('/register/', (route) => false),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        AppTexts.signUpNow(context),
+                        style: const TextStyle(
+                          color: Colors.deepPurple,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Colors.deepPurple,
                         ),
                       ),
                     ),
-
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () => Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/register/', (route) => false),
-                child: const Text(
-                  'Not registered? Register Now',
-                  style: TextStyle(decoration: TextDecoration.underline),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 10),
-            ],
+
+                const SizedBox(height: 20),
+
+                // Divider
+                const SizedBox(height: 20),
+
+                // Social Login Icons (Placeholder for future integration)
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

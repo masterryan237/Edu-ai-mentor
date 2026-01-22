@@ -18,7 +18,7 @@ class AuthService {
         email: email.text.trim(),
         password: password.text.trim(),
       );
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       // C'EST CETTE LIGNE QUI DIT À LA PAGE DE LOGIN QU'IL Y A UNE ERREUR
       rethrow;
     }
@@ -34,7 +34,7 @@ class AuthService {
         email: email.text.trim(),
         password: password.text.trim(),
       );
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       rethrow; // Renvoie l'erreur vers ton _handleLogin dans LoginView
     }
   }

@@ -1,4 +1,5 @@
 import 'package:eduai_mentor/services/auth_service.dart';
+import 'package:eduai_mentor/utilis/app_texts_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -40,14 +41,14 @@ class _RegisterViewState extends State<RegisterView> {
 
   bool _validateFields() {
     setState(() {
-      _emailError = _email.text.isEmpty ? "Enter your email address" : null;
+      _emailError = _email.text.isEmpty ? AppTexts.enterEmail(context) : null;
 
       if (_password.text.isEmpty) {
-        _passwordError = "Enter a secure password";
+        _passwordError = AppTexts.enterPassword(context);
       } else if (_password.text.length < 6) {
-        _passwordError = "The password should have at least 6 characters";
+        _passwordError = AppTexts.passwordTooShort(context);
       } else if (_password.text != _confirmPassword.text) {
-        _passwordError = "passwords don't matching";
+        _passwordError = AppTexts.passwordsDontMatch(context);
       } else {
         _passwordError = null;
       }
@@ -80,9 +81,9 @@ class _RegisterViewState extends State<RegisterView> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Unknown Error : $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppTexts.unknownError(context, e.toString()))),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -92,151 +93,417 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registering'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 25.0),
-        child: Center(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Image.asset('assets/images/AppLogo.png', width: 150, height: 150),
-              const Text(
-                'Registering',
-                style: TextStyle(
-                  fontSize: 30,
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              // Champ Email
-              Semantics(
-                identifier: "email_field",
-                child: TextField(
-                  controller: _email,
-                  autocorrect: false,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email Address',
-                    hintText: 'Enter your Email address',
-                    errorText: _emailError,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // --- CHAMP PASSWORD AVEC OEIL ---
-              Semantics(
-                identifier: "password_field",
-                child: TextField(
-                  controller: _password,
-                  obscureText: _obscurePassword,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'Enter a secure password',
-                    errorText: _passwordError,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // --- CHAMP CONFIRM PASSWORD AVEC OEIL ---
-              Semantics(
-                identifier: "confirm_password_field",
-                child: TextField(
-                  controller: _confirmPassword,
-                  obscureText: _obscureConfirmPassword,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm Password',
-                    hintText: 'Confirm your password',
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        setState(
-                          () => _obscureConfirmPassword =
-                              !_obscureConfirmPassword,
-                        );
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Bouton Register / Loading
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: Semantics(
-                        identifier: "register_button",
-                        child: OutlinedButton(
-                          onPressed: _handleRegister,
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Colors.blue,
-                              width: 1.0,
+      backgroundColor: const Color(0xFFF8F9FF),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Logo et titre
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7B61FF).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF7B61FF).withOpacity(0.2),
+                              blurRadius: 15,
+                              offset: const Offset(0, 4),
                             ),
-                          ),
-                          child: const Text(
-                            'Register',
-                            style: TextStyle(color: Colors.blue, fontSize: 18),
+                          ],
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            "assets/images/AppLogo.png",
+                            color: const Color(0xFF7B61FF),
                           ),
                         ),
                       ),
-                    ),
-
-              const SizedBox(height: 10),
-
-              TextButton(
-                onPressed: () => Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/login/', (route) => false),
-                child: const Text(
-                  'Already have an account? Log In !',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 16,
-                    decoration: TextDecoration.underline,
+                      const SizedBox(height: 24),
+                      Text(
+                        AppTexts.createAccount(context),
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        AppTexts.joinToday(context),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF666666),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 40),
+
+                // Formulaire d'inscription
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Champ Email
+                      Semantics(
+                        identifier: "email_field",
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppTexts.emailAddress(context),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF333333),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _emailError != null
+                                      ? Colors.red
+                                      : const Color(0xFFE0E0E0),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _email,
+                                autocorrect: false,
+                                keyboardType: TextInputType.emailAddress,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF333333),
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: AppTexts.emailHint(context),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF999999),
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.email,
+                                    color: Color(0xFF7B61FF),
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (_emailError != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                _emailError!,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Champ Password
+                      Semantics(
+                        identifier: "password_field",
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppTexts.password(context),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF333333),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _passwordError != null
+                                      ? Colors.red
+                                      : const Color(0xFFE0E0E0),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _password,
+                                obscureText: _obscurePassword,
+                                enableSuggestions: false,
+                                autocorrect: false,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF333333),
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: AppTexts.passwordHint(context),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF999999),
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.lock,
+                                    color: Color(0xFF7B61FF),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Color(0xFF999999),
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      setState(
+                                        () => _obscurePassword =
+                                            !_obscurePassword,
+                                      );
+                                    },
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Champ Confirm Password
+                      Semantics(
+                        identifier: "confirm_password_field",
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppTexts.confirmPassword(context),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF333333),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: _passwordError != null
+                                      ? Colors.red
+                                      : const Color(0xFFE0E0E0),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _confirmPassword,
+                                obscureText: _obscureConfirmPassword,
+                                enableSuggestions: false,
+                                autocorrect: false,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF333333),
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: AppTexts.passwordHint(context),
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF999999),
+                                  ),
+                                  prefixIcon: Icon(
+                                    Icons.lock_reset,
+                                    color: Color(0xFF7B61FF),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureConfirmPassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Color(0xFF999999),
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      setState(
+                                        () => _obscureConfirmPassword =
+                                            !_obscureConfirmPassword,
+                                      );
+                                    },
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (_passwordError != null) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                _passwordError!,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Indications pour le mot de passe
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            color: Color(0xFF666666),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppTexts.atLeastCharacters(context),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF666666),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Bouton Register
+                      SizedBox(
+                        width: double.infinity,
+                        child: _isLoading
+                            ? Center(
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  padding: const EdgeInsets.all(8),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                            : Semantics(
+                                identifier: "register_button",
+                                child: ElevatedButton(
+                                  onPressed: _handleRegister,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF7B61FF),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 24,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        AppTexts.createAccountBtn(context),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(Icons.arrow_forward, size: 20),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Lien vers Login
+                Center(
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/login/', (route) => false),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: RichText(
+                        text: TextSpan(
+                          text: AppTexts.alreadyHaveAccount(context),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF666666),
+                          ),
+                          children: [
+                            TextSpan(
+                              text: AppTexts.signIn(context),
+                              style: const TextStyle(
+                                color: Color(0xFF7B61FF),
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Conditions d'utilisation
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Text(
+                      AppTexts.termsAgreement(context),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF999999),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

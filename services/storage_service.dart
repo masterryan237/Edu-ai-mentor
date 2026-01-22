@@ -32,7 +32,7 @@ class StorageService {
     await Supabase.instance.client.storage
         .from(_bucket)
         .remove([supabasePath])
-        .timeout(const Duration(seconds: 10));
+        .timeout(const Duration(seconds: 30));
   }
 
   Future<(String, String)> saveGeneratedCourseToSupabase(
